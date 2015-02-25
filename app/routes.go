@@ -1,5 +1,5 @@
 package app
 
 func configureRoutes() {
-	app.Route("/articles/", articleListHandler, "articles")
+	app.HandleFunc("/articles/", articleListHandler, "articles")
 }

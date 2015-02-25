@@ -1,3 +1,10 @@
+// CMS Application
+//
+// Usage:
+//	import "net/http"
+//	import "lightship/app"
+//	cms := app.Init()
+//	http.ListenAndServe(":8080", cms.Handler())
 package app
 
 import (
@@ -8,11 +15,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type WebApp struct {
+type App interface {
+	// Given name of a handler and handler's path args, returns url (path).
+	// In case of error, returns empty string.
+	Url(name string, args ...string) string
+
+	// Registers handler at path. Names the handler as well.
+	HandleFunc(path string, handler http.HandlerFunc, name string) *mux.Route
+
+	// Returns main http handler.
+	Handler() http.Handler
+}
+
+type webApp struct {
 	router *mux.Router
 }
 
-func (app *WebApp) Url(name string, args ...string) string {
+func (app *webApp) Url(name string, args ...string) string {
 	url, err := app.router.Get(name).URL(args...)
 	if err != nil {
 		return ""
@@ -20,13 +39,25 @@ func (app *WebApp) Url(name string, args ...string) string {
 	return url.String()
 }
 
-func (app *WebApp) Route(path string, handler http.HandlerFunc, name string) *mux.Route {
+func (app *webApp) HandleFunc(path string, handler http.HandlerFunc, name string) *mux.Route {
 	return app.router.HandleFunc(path, handler).Name(name)
 }
 
-var app = WebApp{router: mux.NewRouter()}
-
-func Init() http.Handler {
-	configureRoutes()
+func (app *webApp) Handler() http.Handler {
 	return app.router
+}
+
+func (app *webApp) Init() {
+	app.router = mux.NewRouter()
+	configureRoutes()
+}
+
+var app = new(webApp)
+
+// Gives instance of App.
+//
+// TODO: takes configuration.
+func Init() App {
+	app.Init()
+	return app
 }
