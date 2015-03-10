@@ -1,2 +1,4 @@
-lightship
 *.db
+.idea/
+target/
+*.class
