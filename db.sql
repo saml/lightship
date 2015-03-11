@@ -40,8 +40,16 @@ CREATE TABLE images(
   caption VARCHAR(255)
 );
 
+-- article life time
+-- created in drafts table
+-- drafts -> articles: when it's published first time, moved to articles table.
+-- articles -> drafts: published article can be edited.
+-- unpublishing an article just sets boolean flag in articles.
+
+
 CREATE TABLE articles(
   id INT PRIMARY KEY,
+  is_published INT NOT NULL, -- 0 for unpublished.
   brand_id INT REFERENCES brands(id) NOT NULL,
   publish_date DATETIME NOT NULL,
   path VARCHAR(255) UNIQUE, -- part of url.
@@ -72,6 +80,7 @@ CREATE TABLE article_tags(
 -- When a published article gets modified, it's moved to drafts as well.
 CREATE TABLE drafts(
   id INT PRIMARY KEY,
+  article_id INT REFERENCES articles(id), -- Unless new draft, have reference to article.
   brand_id INT REFERENCES brands(id),
   publish_date DATETIME,
 
